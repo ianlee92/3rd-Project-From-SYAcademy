@@ -59,6 +59,66 @@ public class DogDAO {
 		return mapper.dogStarCount(map);
 	}
 	
+	// 메인 댓글 삽입
+	public void dogInsertReply(DogReplyVO vo){
+		try {
+			mapper.dogInsertReply(vo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	// 메인 댓글작성시 게시글 댓글수 증가
+	public void dogReplyIncrement(int no){
+		try {
+			mapper.dogReplyIncrement(no);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+		
+	// 메인 댓글 출력
+	public List<DogReplyVO> dogListReply(int bno){	
+		return mapper.dogListReply(bno);
+	}
+		
+	// 메인 대댓글 작성
+	public void dogReplyReplyInsert(int root, DogReplyVO vo){
+		DogReplyVO parent_vo = mapper.dogReplyParentData(root);
+		mapper.dogReplyStepIncrement(parent_vo);
+		vo.setGroup_id(parent_vo.getGroup_id());
+		vo.setGroup_step(parent_vo.getGroup_step() + 1);
+		vo.setGroup_tab(parent_vo.getGroup_tab() + 1);
+		vo.setRoot(root);
+		
+		mapper.dogReplyReplyInsert(vo);
+		mapper.dogReplyDepthIncrement(root);
+	}
+		
+	// 메인 댓글 수정
+	public void dogUpdateReply(DogReplyVO vo){
+		mapper.dogUpdateReply(vo);
+	}
+			
+	// 메인 댓글 삭제
+	public void dogDeleteReply(int no){
+		try {
+			DogReplyVO vo = mapper.dogInfoData(no);
+			if(vo.getDepth()==0)
+			   {
+				   mapper.dogDeleteReply(no);
+			   }
+			   else
+			   {
+				   mapper.dogAdminMessage(no);
+			   }
+			mapper.dogDepthDecrement(vo.getRoot());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
 	// 게시판1 /////////////////////////////////////////////////////
 	
 	// 게시판1 목록 읽기
@@ -82,6 +142,74 @@ public class DogDAO {
 		mapper.boardInsert(vo);
 	}
 	
+	// 게시판1 수정
+	public void boardUpdate(Map map){
+		mapper.boardUpdate(map);
+	}
+	
+	// 게시판1 삭제 
+	public void boardDelete(int no) {
+		mapper.boardDelete(no);
+	}
+	
+	// 게시판1 댓글 삽입
+	public void boardInsertReply(DogBoardReplyVO vo){
+		try {
+			mapper.boardInsertReply(vo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	// 게시판1 댓글작성시 게시글 댓글수 증가
+	public void boardReplyIncrement(int no){
+		try {
+			mapper.boardReplyIncrement(no);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+			
+	// 게시판1 댓글 출력
+	public List<DogBoardReplyVO> boardListReply(int bno){	
+		return mapper.boardListReply(bno);
+	}
+		
+	// 게시판1 대댓글 작성
+	public void boardReplyReplyInsert(int root, DogBoardReplyVO vo){
+		DogBoardReplyVO parent_vo = mapper.boardReplyParentData(root);
+		mapper.boardReplyStepIncrement(parent_vo);
+		vo.setGroup_id(parent_vo.getGroup_id());
+		vo.setGroup_step(parent_vo.getGroup_step() + 1);
+		vo.setGroup_tab(parent_vo.getGroup_tab() + 1);
+		vo.setRoot(root);
+			
+		mapper.boardReplyReplyInsert(vo);
+		mapper.boardReplyDepthIncrement(root);
+	}
+			
+	// 게시판1 댓글 수정
+	public void boardUpdateReply(DogBoardReplyVO vo){
+		mapper.boardUpdateReply(vo);
+	}
+				
+	// 게시판1 댓글 삭제
+	public void boardDeleteReply(int no){
+		try {
+			DogBoardReplyVO vo = mapper.boardInfoData(no);
+			if(vo.getDepth()==0)
+			   {
+				   mapper.boardDeleteReply(no);
+			   }
+			   else
+			   {
+				   mapper.boardAdminMessage(no);
+			   }
+			mapper.boardDepthDecrement(vo.getRoot());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// 익명게시판 /////////////////////////////////////////////////////
 	
 	// 익게 목록 읽기
@@ -98,4 +226,15 @@ public class DogDAO {
 	public void anonyInsert(DogAnonymousVO vo) {
 		mapper.anonyInsert(vo);
 	}
+	
+	// 익게 수정
+	public void anonyUpdate(DogAnonymousVO vo){
+		mapper.annoyUpdate(vo);
+	}
+	
+	// 익게 삭제
+	public void anonyDelete(int no){
+		mapper.anonyDelete(no);
+	}
+	
 }

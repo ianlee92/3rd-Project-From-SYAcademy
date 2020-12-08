@@ -38,6 +38,7 @@ public class DogController {
 	
 	// 메인 ////////////////////////////////////////////////////////
 	
+	// 메인 출력
 	@RequestMapping("dog/parkmain.do")
 	public String park_main(String page, Model model){
 		if(page==null)
@@ -127,6 +128,7 @@ public class DogController {
 		model.addAttribute("searchcount",searchcount);
 		return "dog/parksearch";
 	}
+	
 	// 상세 쿠키
 	@RequestMapping("dog/park_before.do")
 	public String park_detail_before(HttpServletRequest request, HttpServletResponse response) {
@@ -150,6 +152,7 @@ public class DogController {
 	public String park_detail(String no, Model model, HttpSession session, HttpServletRequest request){
 		try {
 			DogVO vo=dao.dogDetailData(Integer.parseInt(no));
+			List<DogReplyVO> rList = dao.dogListReply(Integer.parseInt(no));
 			if(session.getAttribute("id")!=null) {
 			session=request.getSession();
 			String id=(String)session.getAttribute("id");
@@ -170,6 +173,7 @@ public class DogController {
 			}
 			ncm.naverData(vo.getName());
 			rmp.graph(Integer.parseInt(no));
+			model.addAttribute("rList", rList);
 			model.addAttribute("vo", vo);
 		}catch(Exception ex){
 			System.out.println(ex.getMessage());
@@ -225,6 +229,86 @@ public class DogController {
 		model.addAttribute("starcount",starcount);
 		return "dog/parkstar";
 	}
+	
+	
+	// 메인 댓글 달기
+	@RequestMapping("dog/insert_reply.do")
+	public String dogInsertReply(String bno, String msg, String name, HttpSession session){
+		try {
+			DogReplyVO vo = new DogReplyVO();
+			String id = (String)session.getAttribute("id");
+			vo.setId(id);
+			vo.setBno(Integer.parseInt(bno));
+			vo.setMsg(msg);
+			vo.setName(name);
+			dao.dogReplyIncrement(Integer.parseInt(bno));
+			
+			System.out.println("id : " + id);
+			System.out.println("bno : " + bno);
+			System.out.println("msg : " + msg);
+		
+			dao.dogInsertReply(vo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		return "redirect:../dog/parkdetail.do?no=" + bno;
+	}
+		
+		
+	// 메인 대댓글 달기
+	@RequestMapping("dog/insert_replyReply.do")
+	public String dogInsertReplyReply(String parent_no, String bno, String msg, String name, HttpSession session){
+			
+		try {
+			// 부모댓글번호 받기
+			// 게시글번호 받기
+			// 댓글내용 받기
+			String id = (String)session.getAttribute("id");
+			System.out.println("id : " + id);
+			System.out.println("bno : " + bno);
+			System.out.println("msg : " + msg);
+			DogReplyVO vo = new DogReplyVO();
+			vo.setBno(Integer.parseInt(bno));
+			vo.setMsg(msg);
+			vo.setId(id);
+			vo.setName(name);
+			dao.dogReplyReplyInsert(Integer.parseInt(parent_no), vo);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return "redirect:../dog/parkdetail.do?no=" + bno;
+	}
+		
+	// 메인 댓글 수정
+	@RequestMapping("dog/updateReply.do")
+	public String dogUpdateReply(String bno, String no, String msg){
+		try {
+			DogReplyVO vo = new DogReplyVO();
+			vo.setMsg(msg);
+			vo.setNo(Integer.parseInt(no));
+			dao.dogUpdateReply(vo);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return "redirect:../dog/parkdetail.do?no=" + bno;
+	}
+		
+	// 메인 댓글 삭제
+	@RequestMapping("dog/deleteReply.do")
+	public String dogDeleteReply(String no, String bno){
+		try {
+			dao.dogDeleteReply(Integer.parseInt(no));
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return "redirect:../dog/parkdetail.do?no=" + bno;
+	}
+	
 	
 	// 게시판1 /////////////////////////////////////////////////////
 	
@@ -286,18 +370,14 @@ public class DogController {
 
 		if(file.getOriginalFilename() != null && file.getOriginalFilename() != "") {
 			  // 파일 인풋박스에 첨부된 파일이 없다면(=첨부된 파일이 이름이 없다면)
-			  
 			  fileName =  UploadFileUtils.fileUpload(imgUploadPath, file.getOriginalFilename(), file.getBytes(), ymdPath);
-
 			  // poster에 원본 파일 경로 + 파일명 저장
 			  vo.setPoster(ymdPath + File.separator + fileName);
 			  // filename에 썸네일 파일 경로 + 썸네일 파일명 저장
 			  vo.setFilename("..\\resources" + ymdPath + File.separator + "s" + File.separator + "s_" + fileName);
-			  
 			 } else {  // 첨부된 파일이 없으면
 			  vo.setPoster("/images/dog_8.jpg");
 			 }
-
 		dao.boardInsert(vo);
 		}catch(Exception ex) {
 			System.out.println(ex.getMessage());
@@ -306,26 +386,126 @@ public class DogController {
 	}
 	
 	// 게시판1 상세보기
-	
 	@RequestMapping("dogboard/detail.do")
 	public String dog_board_detail(String no, Model model) {
 		DogBoardVO vo=dao.boardDetailData(Integer.parseInt(no));
+		List<DogBoardReplyVO> rList = dao.boardListReply(Integer.parseInt(no));
+		model.addAttribute("rList", rList);
 		model.addAttribute("vo", vo);
 		return "dogboard/detail";
 	}
 	
-	// 게시판1 삭제하기
+	// 게시판1 수정내용 가져오기
+	@RequestMapping("dogboard/update.do")
+	public String dog_board_update(String no, Model model){
+		DogBoardVO vo = dao.boardDetailData(Integer.parseInt(no));
+		model.addAttribute("vo", vo);
+		return "dogboard/update";
+	}
+		
+	// 게시판1 수정하기
+	@RequestMapping("dogboard/update_ok.do")
+	public String dog_board_update_ok(@ModelAttribute("vo") DogBoardVO vo, String no, String pwd, String content, String subject){
+		
+		try {
+		Map map = new HashMap();
+		map.put("no", no);
+		map.put("content", content);
+		map.put("subject", subject);
+		map.put("pwd", pwd);
+
+		dao.boardUpdate(map);
+		}catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
+		return "redirect:../dogboard/detail.do?no=" + no;
+	}
 	
+	// 게시판1 삭제하기
 	@RequestMapping("dogboard/delete.do")
 	public String diaryDelete(String no){
 		dao.boardDelete(Integer.parseInt(no));
 		return "redirect:list.do#yong";
 	}
 	
+	// 게시판1 댓글 달기
+	@RequestMapping("dogboard/insert_reply.do")
+	public String boardInsertReply(String bno, String msg, String name, HttpSession session){
+		try {
+			DogBoardReplyVO vo = new DogBoardReplyVO();
+			String id = (String)session.getAttribute("id");
+			vo.setId(id);
+			vo.setBno(Integer.parseInt(bno));
+			vo.setMsg(msg);
+			vo.setName(name);
+			dao.boardReplyIncrement(Integer.parseInt(bno));
+			System.out.println("id : " + id);
+			System.out.println("bno : " + bno);
+			System.out.println("msg : " + msg);
+			dao.boardInsertReply(vo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		return "redirect:../dogboard/detail.do?no=" + bno;
+	}
+			
+	// 게시판1 대댓글 달기
+	@RequestMapping("dogboard/insert_replyReply.do")
+	public String boardInsertReplyReply(String parent_no, String bno, String msg, String name, HttpSession session){		
+		try {
+			// 부모댓글번호 받기
+			// 게시글번호 받기
+			// 댓글내용 받기
+			String id = (String)session.getAttribute("id");
+			System.out.println("id : " + id);
+			System.out.println("bno : " + bno);
+			System.out.println("msg : " + msg);
+			DogBoardReplyVO vo = new DogBoardReplyVO();
+			vo.setBno(Integer.parseInt(bno));
+			vo.setMsg(msg);
+			vo.setId(id);
+			vo.setName(name);
+			dao.boardReplyReplyInsert(Integer.parseInt(parent_no), vo);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}		
+			return "redirect:../dogboard/detail.do?no=" + bno;
+	}
+			
+	// 게시판1 댓글 수정
+	@RequestMapping("dogboard/updateReply.do")
+	public String boardUpdateReply(String bno, String no, String msg){
+		try {
+			DogBoardReplyVO vo = new DogBoardReplyVO();
+			vo.setMsg(msg);
+			vo.setNo(Integer.parseInt(no));
+			dao.boardUpdateReply(vo);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return "redirect:../dogboard/detail.do?no=" + bno;
+	}
+			
+	// 댓글 삭제
+	@RequestMapping("dogboard/deleteReply.do")
+	public String boardDeleteReply(String no, String bno){
+		try {
+			dao.boardDeleteReply(Integer.parseInt(no));
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}	
+		return "redirect:../dogboard/detail.do?no=" + bno;
+	}
+		
 	// 익명게시판 /////////////////////////////////////////////////////
 	
+	// 익게 출력
 	@RequestMapping("dogboard/anonymous.do")
-	public String dog_anonyboard_list(String page, Model model) {
+	public String anony_list(String page, Model model, HttpSession session) {
+		DogAnonymousVO vo = new DogAnonymousVO();
+		String ip = (String)session.getAttribute("id");
+		System.out.println("ip:"+ip);
+		vo.setIp(ip);
 		if(page==null)
 			page="1";
 		Map map=new HashMap();
@@ -351,10 +531,32 @@ public class DogController {
 		model.addAttribute("BLOCK", BLOCK);
 		return "dogboard/anonymous";
 	}
-		
-	@PostMapping("dogboard/ano_insert_ok.do")
-	public String dog_board_insert_ok(@ModelAttribute("vo") DogAnonymousVO vo) {
+	
+	// 익게 입력
+	@RequestMapping("dogboard/ano_insert_ok.do")
+	public String anony_insert_ok(@ModelAttribute("vo") DogAnonymousVO vo, String no, String msg, String pwd, HttpSession session) {
+		String ip = (String)session.getAttribute("id");
+		vo.setIp(ip);
 		dao.anonyInsert(vo);
+		return "redirect:anonymous.do#yong";
+	}
+	
+	// 익게 수정
+	@RequestMapping("dogboard/ano_update.do")
+	public String anony_update(String no, String msg, HttpSession session){
+		DogAnonymousVO vo = new DogAnonymousVO();
+		String ip = (String)session.getAttribute("id");
+		vo.setIp(ip);
+		vo.setMsg(msg);
+		vo.setNo(Integer.parseInt(no));
+		dao.anonyUpdate(vo);
+		return "redirect:anonymous.do#yong";
+	}
+	
+	// 익게 삭제
+	@RequestMapping("dogboard/ano_delete.do")
+	public String anony_delete(String no, HttpSession session){
+		dao.anonyDelete(Integer.parseInt(no));
 		return "redirect:anonymous.do#yong";
 	}
 		

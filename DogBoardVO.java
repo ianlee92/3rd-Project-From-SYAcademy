@@ -34,6 +34,14 @@ public class DogBoardVO {
 	private String filename;
 	private String filesize;
 	private int filecount;
+	private int reply;
+	
+	public int getReply() {
+		return reply;
+	}
+	public void setReply(int reply) {
+		this.reply = reply;
+	}
 	public int getNo() {
 		return no;
 	}
