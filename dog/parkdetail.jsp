@@ -96,7 +96,7 @@ $(function(){
             <br>
             <h5>Map</h5>
             <div id="map" style="width:100%; height:350px;"></div>
-            <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b2f2cd1358d3e8c7a2692ed4acf113be&libraries=services"></script>
+            <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=앱키&libraries=services"></script>
 			<script>
 			var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
 			    mapOption = {
