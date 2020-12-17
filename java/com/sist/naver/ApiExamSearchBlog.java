@@ -10,8 +10,8 @@ import java.util.Map;
 public class ApiExamSearchBlog {
 
     public String naverFindData(String data) {
-        String clientId = "EAStuJeYD7nuG2xAOs5W"; //애플리케이션 클라이언트 아이디값"
-        String clientSecret = "QDOzFWWXPA"; //애플리케이션 클라이언트 시크릿값"
+        String clientId = ""; //애플리케이션 클라이언트 아이디값"
+        String clientSecret = ""; //애플리케이션 클라이언트 시크릿값"
 
         String text = null;
         try {
