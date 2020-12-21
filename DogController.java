@@ -36,7 +36,7 @@ public class DogController {
 	@Resource(name="uploadPath")
 	private String uploadPath;
 	
-	// 메인 ////////////////////////////////////////////////////////
+	// 메인 ///////////////////////////////////////////////////////
 	
 	// 메인 출력
 	@RequestMapping("dog/parkmain.do")
